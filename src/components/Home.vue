@@ -69,11 +69,8 @@
             "title": "banner管理",
             "urlf": "banner.html",
           },{
-            "title": "意见反馈列表",
-            "urlf": "feedback.html",
-          },{
-            "title": "评价列表",
-            "urlf": "comment.html",
+            "title": "新闻列表",
+            "urlf": "News.html",
           }]
         },],
         userName: "",

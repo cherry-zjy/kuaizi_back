@@ -31,6 +31,13 @@ export default {
       _this.editor.setContent(_this.defaultMsg); // 确保UE加载完成后，放入内容。
     });
   },
+  watch: {
+      defaultMsg: function (n,o) {
+        // this.$emit('defaultMsg',n)
+        this.editor.setContent(n)
+        // console.log('参数更改' + n)
+      },
+    },
   methods: {
     getUEContent() {
       // 获取内容方法

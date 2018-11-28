@@ -21,10 +21,10 @@ Vue.use(ElementUI);
 Vue.config.productionTip = false
 
 //全局引入百度编辑器
-// import '../static/UEtidor/ueditor.config.js'
-// import '../static/UEtidor/ueditor.all.min.js'
-// import '../static/UEtidor/lang/zh-cn/zh-cn.js'
-// import '../static/UEtidor/ueditor.parse.min.js'
+import '../static/UEtidor/ueditor.config.js'
+import '../static/UEtidor/ueditor.all.min.js'
+import '../static/UEtidor/lang/zh-cn/zh-cn.js'
+import '../static/UEtidor/ueditor.parse.min.js'
 
 /* eslint-disable no-new */
 new Vue({
