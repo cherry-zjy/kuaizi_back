@@ -6,7 +6,7 @@
         <!-- <div style="float: left;height: 60px;">
           <img src="../assets/logo.png" style="height:50px;width:50px;margin:5px 10px;" alt="">
         </div> -->
-        <div v-if="welcome" style="float: left;height: 60px;color:#fff">欢迎来到全球英才小程序后台管理系统</div>
+        <div v-if="welcome" style="float: left;height: 60px;color:#fff">欢迎来到快子金融后台管理系统</div>
         <div style="float: right;color:#fff; font-size: 12px;margin-right:50px;">
           <el-dropdown>
             <i class="el-icon-setting" style="margin-right: 15px;color:#fff;"></i>
@@ -64,45 +64,9 @@
       return {
         defaultActiveIndex: ["0"],
         menuList: [{
-        "name": "人员管理",
-          "snippet": [{
-            "title": "管理员管理",
-            "urlf": "manage.html",
-          }]
-        }, {
-          "name": "打工管理",
-          "snippet": [{
-            "title": "企业列表",
-            "urlf": "company.html",
-          }, {
-            "title": "门店列表",
-            "urlf": "store.html",
-          }, {
-            "title": "报名列表",
-            "urlf": "enter.html",
-          }]
-        }, {
-          "name": "用户管理",
-          "snippet": [{
-            "title": "普通用户列表",
-            "urlf": "user.html",
-          }, {
-            "title": "工资列表",
-            "urlf": "wagelist.html",
-          }, {
-            "title": "经纪人列表",
-            "urlf": "agent.html",
-          }]
-        }, {
-          "name": "提现管理",
-          "snippet": [{
-            "title": "提现列表",
-            "urlf": "withdraw.html",
-          }]
-        },{
           "name": "平台管理",
           "snippet": [{
-            "title": "今日推荐",
+            "title": "banner管理",
             "urlf": "banner.html",
           },{
             "title": "意见反馈列表",

@@ -2,76 +2,93 @@
   <div>
     <el-breadcrumb separator="|" class="crumb">
       <el-breadcrumb-item :to="{ path: '/' }">后台管理</el-breadcrumb-item>
-      <el-breadcrumb-item>今日推荐</el-breadcrumb-item>
+      <el-breadcrumb-item>Banner列表</el-breadcrumb-item>
     </el-breadcrumb>
 
+    <!--检索条-->
+    <el-col class="toolbar" style="padding: 15px 0;">
+      <!-- <el-select v-model="type" placeholder="适用范围">
+        <el-option v-for="item in TypeList" :key="item.ID" :label="item.Name" :value="item.ID">
+        </el-option>
+      </el-select> -->
+      <el-button size="mini" type="primary" @click="handleAdd()" style="float:right">新增</el-button>
+    </el-col>
+
     <!-- table 内容 -->
-    <el-table :data="List" style="width: 100%" :border='true' v-if="!edit">
-      <el-table-column label="企业名称" prop="WorkName">
-      </el-table-column>
-      <el-table-column label="banner图" prop="Image">
+    <el-table :data="list" style="width: 100%" :border='true'>
+      <el-table-column label="Banner图片" prop="Image">
         <template slot-scope="scope">
-          <img :src="mainurl+scope.row.Image" width="200" />
+          <img :src="mainurl+scope.row.Image" width="100" />
         </template>
+      </el-table-column>
+      <el-table-column label="适用范围" prop="Type" :formatter="Post">
+      </el-table-column>
+      <el-table-column label="跳转链接" prop="URL">
       </el-table-column>
       <el-table-column label="操作">
         <template slot-scope="scope">
-          <el-button size="mini" type="primary" plain icon="el-icon-edit" @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
+          <el-button size="mini" type="primary" plain icon="el-icon-edit" @click="handleEdit(scope.row.ID)">编辑</el-button>
+          <el-button size="mini" type="danger" plain icon="el-icon-delete" @click="handleDelete(scope.row.ID)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
 
-    <el-col :span="16" v-else class="editform">
-      <el-form :model="editForm" :rules="listrules" ref="editForm" label-width="150px" class="demo-editForm" label-position="left">
-        <el-form-item label="banner图：">
-          <el-upload v-model="editForm.Image" class="avatar-uploader" :action="action" :show-file-list="false" :on-success="handleAvatarSuccess"
-            :before-upload="beforeAvatarUpload">
-            <img v-if="imageUrl" :src="imageUrl" class="avatar" width="200">
-            <i v-else class="el-icon-plus avatar-uploader-icon"></i>
-          </el-upload>
-        </el-form-item>
-        <el-form-item label="跳转企业：" prop="WorkName">
-          <el-select v-model="editForm.WorkName" placeholder="请选择跳转企业">
-            <el-option v-for="item in storeList" :key="item.ID" :label="item.Name" :value="item.ID"></el-option>
-          </el-select>
-        </el-form-item>
-        <div class="btn">
-          <el-button type="primary" class="centerbtn" @click="submitList('editForm')">确定</el-button>
-          <el-button type="primary" class="centerbtn" @click="backlist()">返回</el-button>
-        </div>
-      </el-form>
-    </el-col>
   </div>
 </template>
 <script>
-  import md5 from "js-md5";
-
   export default {
     data() {
       return {
-        List: [],
-        storeList: [],
-        filters: {
-          Query: ""
-        },
-        //banner大图url
+        list: [],
         imageUrl: '',
         mainurl: '',
-        edit: false,
-        action: '',
-        listrules: {
-          WorkName: [{
-            required: true,
-            message: '请选择企业',
-            trigger: 'change'
-          }],
-        },
+        type:0,
+        // TypeList:[{
+        //   ID:0,
+        //   Name:'首页'
+        // },{
+        //   ID:1,
+        //   Name:'企业发展'
+        // },{
+        //   ID:2,
+        //   Name:'关于我们'
+        // },{
+        //   ID:3,
+        //   Name:'公司简介'
+        // }]
       };
     },
+    mounted() {
+      this.mainurl = mainurl
+      this.getInfo();
+    },
+    watch:{
+      type:function(n,o){
+        this.getInfo()
+      }
+    },
     methods: {
-      backlist(){
-        this.getInfo();
-        this.edit = false;
+      IsJump(row, IsJump){
+        var IsJump = row[IsJump.property];
+        if (IsJump == true) {
+          return IsJump = "是"
+        } else{
+          return IsJump = "否"
+        }
+        return IsJump
+      },
+      Post(row, Position) {
+        var Position = row[Position.property];
+        if (Position == 0) {
+          return Position = "首页"
+        } else if (Position == 1) {
+          return Position = "企业发展"
+        } else if (Position == 2) {
+          return Position = "关于我们"
+        } else if (Position == 3) {
+          return Position = "公司简介"
+        }
+        return Position
       },
       getInfo() {
         const loading = this.$loading({
@@ -81,18 +98,15 @@
           background: "rgba(0, 0, 0, 0.7)"
         });
         this.$http
-          .get("api/Back/QueryBanner", {
-            params: {
-              Query: (this.filters.Query == '') ? '-1' : this.filters.Query,
-              Token: getCookie("token"),
-            }
+          .get("api/Back/BannerList", {
+            params: {}
           })
           .then(
             function (response) {
               loading.close();
               var status = response.data.Status;
               if (status === 1) {
-                this.List = response.data.Result.list;
+                this.list = response.data.Result.list;
               } else if (status === 40001) {
                 this.$message({
                   showClose: true,
@@ -125,162 +139,157 @@
             }.bind(this)
           );
       },
-      getstore() {
-        const loading = this.$loading({
-          lock: true,
-          text: "Loading",
-          spinner: "el-icon-loading",
-          background: "rgba(0, 0, 0, 0.7)"
-        });
-        // 获取详情
-        this.$http
-          .get("api/Back/QueryEnterprise", {
-            params: {
-              pageIndex: 1,
-              pageSize: 999,
-              Query: -1,
-              Token: getCookie("token"),
-            }
-          })
-          .then(
-            function (response) {
-              loading.close();
-              var status = response.data.Status;
-              if (status === 1) {
-                this.storeList = response.data.Result.list;
-              } else if (status === 40001) {
-                this.$message({
-                  showClose: true,
-                  type: "warning",
-                  message: response.data.Result
-                });
-                setTimeout(() => {
-                  this.$router.push({
-                    path: "/login"
-                  });
-                }, 1500);
-              } else {
-                loading.close();
-                this.$message({
-                  showClose: true,
-                  type: "warning",
-                  message: response.data.Result
-                });
-              }
-            }.bind(this)
-          )
-          // 请求error
-          .catch(
-            function (error) {
-              loading.close();
-              //   this.$notify.error({
-              //     title: "错误",
-              //     message: "错误：请检查网络"
-              //   });
-            }.bind(this)
-          );
-      },
-      handleEdit(index, row) {
-        this.edit = true;
-        this.editForm = this.List[0];
-        this.imageUrl = this.mainurl+this.List[0].Image;
-        this.getstore()
-      },
-      handleAvatarSuccess(res, file) {
-        this.imageUrl = URL.createObjectURL(file.raw);
-        this.editForm.Image = res.Result[0];
-      },
-      beforeAvatarUpload(file) {
-        const isLt2M = file.size / 1024 / 1024 < 2;
-        if (!isLt2M) {
-          this.$message.error("上传图片大小不能超过 2MB!");
-        }
-        return isLt2M;
-      },
-      // 保存
-      submitList(formName) {
-        this.$refs[formName].validate(valid => {
+      submitForm(formName) {
+        this.$refs[formName].validate((valid) => {
           if (valid) {
-            //判断是否填写完整  --true
-            this.$confirm("确认提交吗？", "提示", {}).then(() => {
-              const loading = this.$loading({
-                lock: true,
-                text: "Loading",
-                spinner: "el-icon-loading",
-                background: "rgba(0, 0, 0, 0.7)"
-              });
-              var para = Object.assign({}, this.editForm);
-              if(para.WorkName == this.List[0].WorkName){
-                for (let i = 0; i < this.storeList.length; i++) {
-                  if (this.storeList[i].Name == para.WorkName) {
-                    para.WorkName = this.storeList[i].ID
-                  }
-                }
-              }
-              // 发保存请求
-              this.$http
-                .get("api/Back/EditBanner", {
-                  params: {
-                    Image: para.Image,
-                    WorkID: para.WorkName,
-                    Token: getCookie("token"),
-                    BannerID:para.ID,
-                  }
-                })
-                .then(
-                  function (response) {
-                    loading.close();
-                    var status = response.data.Status;
-                    if (status === 1) {
-                      this.$message({
-                        showClose: true,
-                        type: "success",
-                        message: response.data.Result
-                      });
-                    } else if (status === 40001) {
-                      this.$message({
-                        showClose: true,
-                        type: "warning",
-                        message: response.data.Result
-                      });
-                      setTimeout(() => {
-                        this.$router.push({
-                          path: "/login"
-                        });
-                      }, 1500);
-                    } else {
-                      this.$message({
-                        showClose: true,
-                        type: "warning",
-                        message: response.data.Result
-                      });
-                    }
-                  }.bind(this)
-                )
-                // 请求error
-                .catch(
-                  function (error) {
-                    loading.close();
-                    this.$notify.error({
-                      title: "错误",
-                      message: "错误：请检查网络"
-                    });
-                  }.bind(this)
-                );
+            const loading = this.$loading({
+              lock: true,
+              text: "Loading",
+              spinner: "el-icon-loading",
+              background: "rgba(0, 0, 0, 0.7)"
             });
+            this.$http
+              .get("api/Back_SortManage/FirstLevelImage", {
+                params: {
+                  logo: this.editForm.Logo,
+                  id: this.editForm.ID,
+                  Token: getCookie("token"),
+                }
+              })
+              .then(
+                function (response) {
+                  loading.close();
+                  var status = response.data.Status;
+                  if (status === 1) {
+                    this.$message({
+                      showClose: true,
+                      type: "success",
+                      message: response.data.Result
+                    });
+                    this.getInfo()
+                    this.dialogFormVisible = false
+                  } else if (status === 40001) {
+                    this.$message({
+                      showClose: true,
+                      type: "warning",
+                      message: response.data.Result
+                    });
+                    setTimeout(() => {
+                      this.$router.push({
+                        path: "/login"
+                      });
+                    }, 1500);
+                  } else {
+                    loading.close();
+                    this.$message({
+                      showClose: true,
+                      type: "warning",
+                      message: response.data.Result
+                    });
+                  }
+                }.bind(this)
+              )
+              // 请求error
+              .catch(
+                function (error) {
+                  loading.close();
+                  this.$notify.error({
+                    title: "错误",
+                    message: "错误：请检查网络"
+                  });
+                }.bind(this)
+              );
           } else {
-            console.log("error submit!!");
+            console.log('error submit!!');
             return false;
           }
         });
       },
+      editimg(index) {
+        this.editForm = this.list[index]
+        this.imageUrl = this.mainurl + this.list[index].Logo
+        this.dialogFormVisible = true
+      },
+      handleCurrentChange(val) {
+        this.pageIndex = val;
+        this.getInfo();
+      },
+      handleAdd(index, row) {
+        this.$router.push("/AddBanner");
+      },
+      handleEdit(id) {
+        this.$router.push("/EditBanner/id=" + id);
+      },
+      handleDelete(id) {
+        this.$confirm('确认删除该Bnner?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          const loading = this.$loading({
+            lock: true,
+            text: "Loading",
+            spinner: "el-icon-loading",
+            background: "rgba(0, 0, 0, 0.7)"
+          });
+          this.$http
+            .get("api/Back/DelBanner", {
+              params: {
+                ID: id,
+                Token: getCookie("token"),
+              }
+            })
+            .then(
+              function (response) {
+                loading.close();
+                var status = response.data.Status;
+                if (status === 1) {
+                  this.$message({
+                    showClose: true,
+                    type: "success",
+                    message: response.data.Result
+                  });
+                  this.getInfo()
+                } else if (status === 40001) {
+                  this.$message({
+                    showClose: true,
+                    type: "warning",
+                    message: response.data.Result
+                  });
+                  setTimeout(() => {
+                    this.$router.push({
+                      path: "/login"
+                    });
+                  }, 1500);
+                } else {
+                  loading.close();
+                  this.$message({
+                    showClose: true,
+                    type: "warning",
+                    message: response.data.Result
+                  });
+                }
+              }.bind(this)
+            )
+            // 请求error
+            .catch(
+              function (error) {
+                loading.close();
+                this.$notify.error({
+                  title: "错误",
+                  message: "错误：请检查网络"
+                });
+              }.bind(this)
+            );
+        }).catch(() => {
+          this.$message({
+            type: 'info',
+            message: '已取消删除'
+          });
+        });
+
+      }
     },
-    
-    mounted() {
-      this.mainurl = mainurl;
-      this.getInfo();
-      this.action = this.mainurl + "/api/Back/UpdateForImage";
-    }
   };
 
 </script>
@@ -297,15 +306,18 @@
     padding: 20px 0;
   }
 
-  .editform {
-    margin: 50px;
+  .el-row {
+    padding: 20px 0px;
   }
 
-  .el-table {
-    margin: 50px 0;
+  .title {
+    font-size: 22px;
+    padding: 15px;
+    font-weight: bolder;
   }
-  .btn{
-    margin-top: 50px;
+
+  .el-input {
+    width: 50%;
   }
 
 </style>

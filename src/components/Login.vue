@@ -3,7 +3,7 @@
     <transition name="form-fade" mode="in-out">
       <div class="form_img">
         <div class="manage_tip">
-            <p>全球英才小程序后台</p>
+            <p>快子金融后台</p>
           </div>
       </div>
     </transition>
